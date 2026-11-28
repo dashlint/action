@@ -22918,15 +22918,15 @@ ${lanes.join("\n")}
           getSymlinkedFiles: () => symlinkedFiles,
           getSymlinkedDirectories: () => symlinkedDirectories,
           getSymlinkedDirectoriesByRealpath: () => symlinkedDirectoriesByRealpath,
-          setSymlinkedFile: (path, real) => (symlinkedFiles || (symlinkedFiles = /* @__PURE__ */ new Map())).set(path, real),
-          setSymlinkedDirectory: (symlink, real) => {
+          setSymlinkedFile: (path, real2) => (symlinkedFiles || (symlinkedFiles = /* @__PURE__ */ new Map())).set(path, real2),
+          setSymlinkedDirectory: (symlink, real2) => {
             let symlinkPath = toPath(symlink, cwd, getCanonicalFileName);
             if (!containsIgnoredPath(symlinkPath)) {
               symlinkPath = ensureTrailingDirectorySeparator(symlinkPath);
-              if (real !== false && !(symlinkedDirectories == null ? void 0 : symlinkedDirectories.has(symlinkPath))) {
-                (symlinkedDirectoriesByRealpath || (symlinkedDirectoriesByRealpath = createMultiMap())).add(real.realPath, symlink);
+              if (real2 !== false && !(symlinkedDirectories == null ? void 0 : symlinkedDirectories.has(symlinkPath))) {
+                (symlinkedDirectoriesByRealpath || (symlinkedDirectoriesByRealpath = createMultiMap())).add(real2.realPath, symlink);
               }
-              (symlinkedDirectories || (symlinkedDirectories = /* @__PURE__ */ new Map())).set(symlinkPath, real);
+              (symlinkedDirectories || (symlinkedDirectories = /* @__PURE__ */ new Map())).set(symlinkPath, real2);
             }
           },
           setSymlinksFromResolutions(forEachResolvedModule, forEachResolvedTypeReferenceDirective, typeReferenceDirectives) {
@@ -48691,11 +48691,11 @@ ${lanes.join("\n")}
         if (!host.realpath) {
           return path;
         }
-        const real = normalizePath2(host.realpath(path));
+        const real2 = normalizePath2(host.realpath(path));
         if (traceEnabled) {
-          trace(host, Diagnostics.Resolving_real_path_for_0_result_1, path, real);
+          trace(host, Diagnostics.Resolving_real_path_for_0_result_1, path, real2);
         }
-        return real;
+        return real2;
       }
       function nodeLoadModuleByRelativeName(extensions, candidate, onlyRecordFailures, state, considerPackageJson) {
         if (state.traceEnabled) {
@@ -139688,14 +139688,14 @@ ${lanes.join("\n")}
           const symlinkCache = host.getSymlinkCache();
           const directoryPath = ensureTrailingDirectorySeparator(host.toPath(directory));
           if ((_a = symlinkCache.getSymlinkedDirectories()) == null ? void 0 : _a.has(directoryPath)) return;
-          const real = normalizePath2(originalRealpath.call(host.compilerHost, directory));
+          const real2 = normalizePath2(originalRealpath.call(host.compilerHost, directory));
           let realPath2;
-          if (real === directory || (realPath2 = ensureTrailingDirectorySeparator(host.toPath(real))) === directoryPath) {
+          if (real2 === directory || (realPath2 = ensureTrailingDirectorySeparator(host.toPath(real2))) === directoryPath) {
             symlinkCache.setSymlinkedDirectory(directoryPath, false);
             return;
           }
           symlinkCache.setSymlinkedDirectory(directory, {
-            real: ensureTrailingDirectorySeparator(real),
+            real: ensureTrailingDirectorySeparator(real2),
             realPath: realPath2
           });
         }
@@ -202129,16 +202129,16 @@ ${options.prefix}` : "\n" : options.prefix
               resolveJs
             );
             if (entrypoints) {
-              const real = (_a2 = host.realpath) == null ? void 0 : _a2.call(host, packageJson.packageDirectory);
-              const realPath2 = real ? hostProject.toPath(real) : void 0;
+              const real2 = (_a2 = host.realpath) == null ? void 0 : _a2.call(host, packageJson.packageDirectory);
+              const realPath2 = real2 ? hostProject.toPath(real2) : void 0;
               const isSymlink = realPath2 && realPath2 !== hostProject.toPath(packageJson.packageDirectory);
               if (isSymlink) {
                 symlinkCache.setSymlinkedDirectory(packageJson.packageDirectory, {
-                  real: ensureTrailingDirectorySeparator(real),
+                  real: ensureTrailingDirectorySeparator(real2),
                   realPath: ensureTrailingDirectorySeparator(realPath2)
                 });
               }
-              return filterEntrypoints(entrypoints, isSymlink ? (entrypoint) => entrypoint.replace(packageJson.packageDirectory, real) : void 0);
+              return filterEntrypoints(entrypoints, isSymlink ? (entrypoint) => entrypoint.replace(packageJson.packageDirectory, real2) : void 0);
             }
           }
           function filterEntrypoints(entrypoints, symlinkName) {
@@ -236019,7 +236019,8 @@ var PropertyReader = class {
     const bag = /* @__PURE__ */ new Map();
     for (const prop of props) {
       const name = prop.getName();
-      if (name.startsWith("__@") || name.startsWith("__#") || this.notOwnKey(prop)) continue;
+      const escaped = String(prop.escapedName);
+      if (escaped.startsWith("__@") || escaped.startsWith("__#") || this.notOwnKey(prop)) continue;
       const v = this.value(this.checker.getTypeOfSymbolAtLocation(prop, at2));
       bag.set(name, this.draft(v, (prop.flags & import_typescript6.default.SymbolFlags.Optional) !== 0));
     }
@@ -237069,7 +237070,7 @@ function readAtCommit(repo, commit, path) {
   return execFileSync("git", ["-C", repo, "show", spec], { encoding: "utf8", stdio: "pipe" });
 }
 function withWorktree(repo, commit, fn) {
-  const dir = mkdtempSync(join2(realpathSync(tmpdir()), "dashlint-base-"));
+  const dir = mkdtempSync(join2(realpathSync.native(tmpdir()), "dashlint-base-"));
   const root = join2(dir, "tree");
   try {
     git(repo, ["worktree", "add", "--detach", "--quiet", root, commit]);
@@ -238993,7 +238994,7 @@ function parseConfig(file, warnings) {
       fatal = message(d);
     }
   };
-  const parsed = import_typescript11.default.getParsedCommandLineOfConfigFile(file, { allowJs: true }, host);
+  const parsed = import_typescript11.default.getParsedCommandLineOfConfigFile(slash(file), { allowJs: true }, host);
   if (!parsed) return fatal ?? `cannot read ${file}`;
   for (const d of parsed.errors) if (d.code !== 18003) warnings.push(message(d));
   return {
@@ -239942,7 +239943,8 @@ function checkModel(ctx, input2) {
 
 // src/cli/commands/diff.ts
 var slash2 = (p) => p.split("\\").join("/");
-var inRepo = (file) => join5(realpathSync3(dirname6(file)), basename3(file));
+var real = (path) => realpathSync3.native(path);
+var inRepo = (file) => join5(real(dirname6(file)), basename3(file));
 function toplevel(dir) {
   try {
     return execFileSync2("git", ["-C", dir, "rev-parse", "--show-toplevel"], {
@@ -240007,7 +240009,7 @@ function diffRun(opts, ctx) {
     });
   } else {
     const repo = toplevel(config.dir);
-    const configRel = relative7(repo, realpathSync3(config.dir));
+    const configRel = relative7(repo, real(config.dir));
     const baseCommit = commitOf(repo, base2);
     const headCommit = headRef === void 0 ? null : commitOf(repo, headRef);
     requirements2 = headRequirements(config, repo, headCommit);
@@ -240160,7 +240162,7 @@ function gitHub(o) {
 
 // src/action/main.ts
 function version() {
-  if (true) return "0.1.0";
+  if (true) return "0.1.2";
   const file = fileURLToPath3(new URL("../../package.json", import.meta.url));
   return JSON.parse(readFileSync8(file, "utf8")).version;
 }
